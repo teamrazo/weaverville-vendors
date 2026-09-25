@@ -1,0 +1,15 @@
+# Next.js
+.next/
+out/
+
+# Node
+node_modules/
+
+# Build artifacts
+tsconfig.json
+next-env.d.ts
+
+# Env files
+.env
+.env.local
+.env.production
