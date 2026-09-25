@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const locationId = process.env.GHL_LOCATION_ID || 'ltcv3MxZCgXvlwLhieDR';
 
-    const apiKey = *** || process.env.GHL_WCOC_API_KEY || '';
+    const apiKey = *** || process.env.GHL_API_KEY || '';
 
 
 
