@@ -1,9 +1,9 @@
 
-@tailwindcss base;
+@tailwind base;
 
-@tailwindcss components;
+@tailwind components;
 
-@tailwindcss utilities;
+@tailwind utilities;
 
 
 
