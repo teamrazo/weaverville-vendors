@@ -1,19 +1,25 @@
-
 @tailwind base;
-
 @tailwind components;
-
 @tailwind utilities;
 
-
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 
 body {
-
-  background-color: #f8f9fa;
-
-  color: #111827;
-
-  font-family: system-ui, -apple-system, sans-serif;
-
+  background-color: #fdfbf5;
+  color: #161513;
+  font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
 }
 
+h1, h2, h3, .font-serif-brand {
+  font-family: 'Cinzel', Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+::selection {
+  background-color: #f0d397;
+  color: #161513;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
