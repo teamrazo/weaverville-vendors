@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     const locationId = process.env.GHL_LOCATION_ID || 'ltcv3MxZCgXvlwLhieDR';
 
-    const apiKey = *** || '';
+    const apiKey = process.env.GHL_API_KEY || '';
 
 
 
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
         headers: {
 
-          'Authorization': `Bearer ***}`,
+          'Authorization': `Bearer ${apiKey}`,
 
           'Version': '2021-07-28',
 
