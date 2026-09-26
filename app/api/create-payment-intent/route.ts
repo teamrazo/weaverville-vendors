@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const stripe = new Stripe(secretKey);
 
     const description = eventName
-      ?  ()
+      ? `Weaverville Chamber of Commerce - ${eventName} Vendor Application Fee`
       : 'Weaverville Chamber of Commerce - Event Vendor Application Fee';
 
     const paymentIntent = await stripe.paymentIntents.create({
