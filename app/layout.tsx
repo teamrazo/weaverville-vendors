@@ -1,9 +1,11 @@
-import './globals.css';
-import React from 'react';
-
 export const metadata = {
   title: 'Weaverville Chamber of Commerce - Event Vendor Portal',
   description: 'Official Event Vendor Application for the Weaverville Chamber of Commerce',
+  openGraph: {
+    images: ['/og-image.png'],
+    imageWidth: 1200,
+    imageHeight: 630,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
