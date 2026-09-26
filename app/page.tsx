@@ -51,7 +51,6 @@ export default function ApplicationPage() {
     zip: '96093',
     description: '',
     boothType: currentEvent.booths[0],
-    specialNeeds: '',
     liabilityAccepted: false,
     signatureName: ''
   });
@@ -215,17 +214,6 @@ export default function ApplicationPage() {
               <option key={i} value={opt}>{opt}</option>
             ))}
           </select>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Special Needs / Accessibility Requests</label>
-          <input
-            type="text"
-            value={formData.specialNeeds}
-            onChange={(e) => setFormData({ ...formData, specialNeeds: e.target.value })}
-            className="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
-            placeholder="e.g. Ramp access, proximity to restrooms, etc."
-          />
         </div>
 
         {/* Disclaimer of Liability */}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const secretKey = process.env.STRIPE_SECRET_KEY || '';
 
@@ -12,15 +12,35 @@ export async function POST() {
       );
     }
 
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    const { email, contactName, businessName, eventName, phone } = body;
+
     const stripe = new Stripe(secretKey);
+
+    const description = eventName
+      ?  ()
+      : 'Weaverville Chamber of Commerce - Event Vendor Application Fee';
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 2000,
       currency: 'usd',
+      description,
+      receipt_email: email || undefined,
       automatic_payment_methods: { enabled: true },
       metadata: {
         source: 'weaverville-vendors',
         item: 'WCoC Event Vendor Fee',
+        eventName: eventName || '',
+        businessName: businessName || '',
+        contactName: contactName || '',
+        phone: phone || '',
+        email: email || '',
       },
     });
 
