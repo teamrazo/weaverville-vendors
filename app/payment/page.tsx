@@ -13,7 +13,30 @@ import {
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
 
-function CheckoutForm({ email }: { email: string }) {
+type Application = {
+  email: string;
+  contactName: string;
+  businessName?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  [key: string]: unknown;
+};
+
+function loadApplication(): Application | null {
+  try {
+    const raw = sessionStorage.getItem('wcoc_vendor_application');
+    if (!raw) return null;
+    const app = JSON.parse(raw);
+    return app && app.email && app.contactName ? app : null;
+  } catch {
+    return null;
+  }
+}
+
+function CheckoutForm({ email, application }: { email: string; application: Application }) {
   const stripe = useStripe();
   const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
@@ -47,7 +70,24 @@ function CheckoutForm({ email }: { email: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-left">
-      <PaymentElement />
+      <PaymentElement
+        options={{
+          defaultValues: {
+            billingDetails: {
+              name: application.contactName,
+              email: application.email,
+              phone: application.phone || undefined,
+              address: {
+                line1: application.address || undefined,
+                city: application.city || undefined,
+                state: application.state || undefined,
+                postal_code: application.zip || undefined,
+                country: 'US',
+              },
+            },
+          },
+        }}
+      />
 
       {errorMessage && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
@@ -70,6 +110,8 @@ function PaymentContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
 
+  const [application, setApplication] = useState<Application | null>(null);
+  const [missingApplication, setMissingApplication] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,6 +124,14 @@ function PaymentContent() {
       return;
     }
 
+    const app = loadApplication();
+    if (!app) {
+      setMissingApplication(true);
+      setLoading(false);
+      return;
+    }
+    setApplication(app);
+
     let cancelled = false;
 
     (async () => {
@@ -89,6 +139,7 @@ function PaymentContent() {
         const res = await fetch('/api/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(app),
         });
         const data = await res.json();
 
@@ -151,15 +202,22 @@ function PaymentContent() {
         <p className="text-sm text-gray-500">Preparing secure payment form...</p>
       )}
 
+      {configured && !loading && missingApplication && (
+        <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md p-4 space-y-2">
+          <p>We could not find your application details on this device.</p>
+          <a href="/" className="inline-block font-semibold underline">Return to the application form</a>
+        </div>
+      )}
+
       {configured && !loading && loadError && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
           {loadError}
         </p>
       )}
 
-      {configured && !loading && !loadError && clientSecret && stripePromise && (
+      {configured && !loading && !loadError && clientSecret && stripePromise && application && (
         <Elements stripe={stripePromise} options={elementsOptions}>
-          <CheckoutForm email={email} />
+          <CheckoutForm email={email || application.email} application={application} />
         </Elements>
       )}
 

@@ -68,21 +68,38 @@ export default function ApplicationPage() {
 
     setIsSubmitting(true);
 
+    const application = {
+      ...formData,
+      eventKey: selectedEventKey,
+      eventName: currentEvent.name,
+      eventDate: currentEvent.date,
+      tagSlug: currentEvent.tagSlug,
+      fee: 20.00
+    };
+
+    // The payment step reads this to attach the vendor's contact details
+    // to the Stripe customer and payment.
+    const saveApplication = (ghlContactId: string | null) => {
+      try {
+        sessionStorage.setItem(
+          'wcoc_vendor_application',
+          JSON.stringify({ ...application, ghlContactId })
+        );
+      } catch {
+        /* storage blocked; payment page will ask them to resubmit */
+      }
+    };
+
     try {
       const res = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          eventKey: selectedEventKey,
-          eventName: currentEvent.name,
-          eventDate: currentEvent.date,
-          tagSlug: currentEvent.tagSlug,
-          fee: 20.00
-        })
+        body: JSON.stringify(application)
       });
 
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        saveApplication(data.ghlContactId || null);
         router.push(`/payment?event=${selectedEventKey}&email=${encodeURIComponent(formData.email)}`);
       } else {
         alert('There was an issue submitting your application. Please try again.');
@@ -90,6 +107,7 @@ export default function ApplicationPage() {
       }
     } catch (err) {
       console.error(err);
+      saveApplication(null);
       setIsSubmitting(false);
       router.push(`/payment?event=${selectedEventKey}&email=${encodeURIComponent(formData.email)}`);
     }
