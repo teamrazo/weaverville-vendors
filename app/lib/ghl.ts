@@ -21,7 +21,7 @@ export type VendorContact = {
 };
 
 function ghlConfig() {
-  const apiKey = process.env.GHL_API_KEY || '';
+  const apiKey = process.env.GHL_API_KEY || process.env.GHL_WCOC_API_KEY || '';
   const locationId = process.env.GHL_LOCATION_ID || 'ltcv3MxZCgXvlwLhieDR';
   return { apiKey, locationId };
 }
@@ -54,7 +54,7 @@ export async function upsertGhlContact(
   const { apiKey, locationId } = ghlConfig();
 
   if (!apiKey) {
-    console.error('[ghl] GHL_API_KEY is not set. Contact was NOT sent to HighLevel.', {
+    console.error('[ghl] Neither GHL_API_KEY nor GHL_WCOC_API_KEY is set. Contact was NOT sent to HighLevel.', {
       email: contact.email,
     });
     return { ok: false, error: 'GHL_API_KEY not configured' };
