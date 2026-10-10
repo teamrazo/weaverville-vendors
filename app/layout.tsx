@@ -1,3 +1,5 @@
+import WcocFooterCredit from './components/WcocFooterCredit';
+
 export const metadata = {
   title: 'Weaverville Chamber of Commerce - Event Vendor Portal',
   description: 'Official Event Vendor Application for the Weaverville Chamber of Commerce',
@@ -53,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </a>
             </p>
           </div>
+          <WcocFooterCredit className="mx-auto mt-5 max-w-4xl border-t border-chamber-gold/20 px-4 pt-4" textClass="text-gray-400" mutedClass="text-gray-500" linkClass="hover:text-chamber-gold" />
         </footer>
       </body>
     </html>
