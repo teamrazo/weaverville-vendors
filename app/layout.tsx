@@ -1,3 +1,4 @@
+import './globals.css';
 import WcocFooterCredit from './components/WcocFooterCredit';
 
 export const metadata = {
