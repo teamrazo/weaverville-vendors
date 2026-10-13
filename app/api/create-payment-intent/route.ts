@@ -100,9 +100,19 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (err: any) {
-    console.error('Error in /api/create-payment-intent:', err);
+    // Full detail stays in the server logs. Vendors never see key or
+    // configuration errors from Stripe.
+    console.error('Error in /api/create-payment-intent:', {
+      type: err?.type,
+      code: err?.code,
+      statusCode: err?.statusCode,
+      message: err?.message,
+    });
     return NextResponse.json(
-      { error: err.message || 'Failed to create payment intent' },
+      {
+        error:
+          'Online payment is temporarily unavailable. Your application was received. Please try again later or contact the Chamber.',
+      },
       { status: 500 }
     );
   }
