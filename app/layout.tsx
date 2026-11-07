@@ -1,13 +1,26 @@
 import type { Metadata, Viewport } from 'next';
-import { Cinzel, Open_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import WcocFooterCredit from './components/WcocFooterCredit';
 import StructuredData from './components/StructuredData';
 import { CHAMBER_NAME, SHARE_SUBTITLE, SHARE_TITLE, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from './lib/site';
 
-// Self-hosted at build time: no render-blocking request to Google on page load.
-const cinzel = Cinzel({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-cinzel', display: 'swap' });
-const openSans = Open_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-open-sans', display: 'swap' });
+// Fonts ship with the site (latin subset, variable weight, SIL Open Font
+// License). No request to Google at build time or page load.
+const cinzel = localFont({
+  src: './fonts/cinzel.woff2',
+  weight: '500 700',
+  variable: '--font-cinzel',
+  display: 'swap',
+  fallback: ['Georgia', 'serif'],
+});
+const openSans = localFont({
+  src: './fonts/open-sans.woff2',
+  weight: '400 700',
+  variable: '--font-open-sans',
+  display: 'swap',
+  fallback: ['system-ui', '-apple-system', 'sans-serif'],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
