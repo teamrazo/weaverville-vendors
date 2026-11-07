@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { feeCentsFor } from '../../lib/events';
 
 // Stripe metadata values are capped at 500 characters.
 const meta = (v: unknown) => (typeof v === 'string' ? v.slice(0, 500) : '');
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
       : 'Weaverville Chamber of Commerce - Event Vendor Application Fee';
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 2000,
+      amount: feeCentsFor(eventKey),
       currency: 'usd',
       customer: customer.id,
       description,

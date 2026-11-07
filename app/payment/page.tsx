@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { feeCentsFor, formatFee } from '../lib/events';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
@@ -36,7 +37,7 @@ function loadApplication(): Application | null {
   }
 }
 
-function CheckoutForm({ email, application }: { email: string; application: Application }) {
+function CheckoutForm({ email, application, feeLabel }: { email: string; application: Application; feeLabel: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
@@ -100,7 +101,7 @@ function CheckoutForm({ email, application }: { email: string; application: Appl
         disabled={!stripe || submitting}
         className="w-full bg-[#D4AF37] hover:bg-[#B8962E] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-md shadow-chamber transition-colors uppercase tracking-wide text-sm"
       >
-        {submitting ? 'Processing...' : 'Complete $20.00 Payment'}
+        {submitting ? 'Processing...' : `Complete ${feeLabel} Payment`}
       </button>
     </form>
   );
@@ -117,6 +118,7 @@ function PaymentContent() {
   const [loading, setLoading] = useState(true);
 
   const configured = Boolean(publishableKey) && Boolean(stripePromise);
+  const feeLabel = formatFee(feeCentsFor(application?.eventKey ?? searchParams.get('event')));
 
   useEffect(() => {
     if (!configured) {
@@ -178,7 +180,7 @@ function PaymentContent() {
       </div>
       <h2 className="text-2xl font-bold font-serif-brand text-chamber-black">Vendor Fee Payment</h2>
       <p className="text-gray-600 text-sm">
-        Your application has been received! Please complete the <strong>$20.00 Vendor Application Fee</strong> to finalize your submission for Board review.
+        Your application has been received! Please complete the <strong>{feeLabel} Vendor Application Fee</strong> to finalize your submission for Board review.
       </p>
 
       <div className="bg-chamber-black text-chamber-cream rounded-lg p-4 text-left text-sm space-y-2 border border-chamber-gold/40">
@@ -188,7 +190,7 @@ function PaymentContent() {
         </div>
         <div className="flex justify-between pt-1 text-base font-bold text-chamber-gold">
           <span>Total Due:</span>
-          <span>$20.00</span>
+          <span>{feeLabel}</span>
         </div>
       </div>
 
@@ -217,7 +219,7 @@ function PaymentContent() {
 
       {configured && !loading && !loadError && clientSecret && stripePromise && application && (
         <Elements stripe={stripePromise} options={elementsOptions}>
-          <CheckoutForm email={email || application.email} application={application} />
+          <CheckoutForm email={email || application.email} application={application} feeLabel={feeLabel} />
         </Elements>
       )}
 

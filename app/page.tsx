@@ -2,43 +2,15 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-const EVENTS = {
-  witches_brigade: {
-    id: 'witches_brigade',
-    name: 'Weaverville 8th Annual Witches Brigade',
-    date: 'October 17, 2026',
-    time: '10:00 AM – 5:00 PM (Setup before 10:00 AM)',
-    fee: '$20.00',
-    booths: ['Outdoor 10x10 (Near Visitor Center)', 'Table Space (Positioned near businesses)'],
-    tagSlug: 'witches-brigade-2026'
-  },
-  mountain_magic: {
-    id: 'mountain_magic',
-    name: 'Mountain Magic Christmas',
-    date: 'December 2026 (TBD)',
-    time: 'TBD',
-    fee: '$20.00',
-    booths: ['Indoor Hall Space', 'Outdoor Booth Space'],
-    tagSlug: 'mountain-magic-2026'
-  },
-  july_4th_fireworks: {
-    id: 'july_4th_fireworks',
-    name: '4th Of July Fireworks & Festival',
-    date: 'July 4, 2026',
-    time: '12:00 PM – 9:00 PM',
-    fee: '$20.00',
-    booths: ['Standard Vendor Plot (10x10)', 'Food/Beverage Truck Spot'],
-    tagSlug: '4th-july-fireworks-2026'
-  }
-};
+import { EVENTS, DEFAULT_EVENT_KEY, formatFee } from './lib/events';
 
 export default function ApplicationPage() {
   const router = useRouter();
-  const [selectedEventKey, setSelectedEventKey] = useState('witches_brigade');
+  const [selectedEventKey, setSelectedEventKey] = useState(DEFAULT_EVENT_KEY);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentEvent = EVENTS[selectedEventKey as keyof typeof EVENTS];
+  const currentEvent = EVENTS[selectedEventKey];
+  const feeLabel = formatFee(currentEvent.feeCents);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -74,7 +46,7 @@ export default function ApplicationPage() {
       eventName: currentEvent.name,
       eventDate: currentEvent.date,
       tagSlug: currentEvent.tagSlug,
-      fee: 20.00
+      fee: currentEvent.feeCents / 100
     };
 
     // The payment step reads this to attach the vendor's contact details
@@ -131,7 +103,7 @@ export default function ApplicationPage() {
             onChange={(e) => {
               const k = e.target.value;
               setSelectedEventKey(k);
-              setFormData(prev => ({ ...prev, boothType: EVENTS[k as keyof typeof EVENTS].booths[0] }));
+              setFormData(prev => ({ ...prev, boothType: EVENTS[k].booths[0] }));
             }}
             className="w-full border border-gray-300 rounded-md p-3 text-gray-900 bg-chamber-gold/10 focus:ring-2 focus:ring-chamber-black font-medium"
           >
@@ -146,7 +118,7 @@ export default function ApplicationPage() {
           <p><strong className="font-semibold text-chamber-gold">Event Name:</strong> {currentEvent.name}</p>
           <p><strong className="font-semibold text-chamber-gold">Date:</strong> {currentEvent.date}</p>
           <p><strong className="font-semibold text-chamber-gold">Time:</strong> {currentEvent.time}</p>
-          <p><strong className="font-semibold text-chamber-gold">Vendor Application Fee:</strong> <span className="text-chamber-accent font-bold">{currentEvent.fee}</span></p>
+          <p><strong className="font-semibold text-chamber-gold">Vendor Application Fee:</strong> <span className="text-chamber-accent font-bold">{feeLabel}</span></p>
         </div>
 
         {/* Vendor Information */}
@@ -276,7 +248,7 @@ export default function ApplicationPage() {
           disabled={isSubmitting}
           className="w-full bg-chamber-black hover:bg-chamber-dark text-chamber-gold font-bold py-3 px-6 rounded-md shadow-chamber border border-chamber-gold/40 transition-colors uppercase tracking-wide text-sm"
         >
-          {isSubmitting ? 'Submitting Application...' : `Submit Application & Proceed to Payment (${currentEvent.fee})`}
+          {isSubmitting ? 'Submitting Application...' : `Submit Application & Proceed to Payment (${feeLabel})`}
         </button>
       </form>
     </div>
