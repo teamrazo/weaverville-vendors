@@ -2,16 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 
 body {
   background-color: #fdfbf5;
   color: #161513;
-  font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-open-sans), 'Open Sans', system-ui, -apple-system, sans-serif;
 }
 
 h1, h2, h3, .font-serif-brand {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: var(--font-cinzel), 'Cinzel', Georgia, serif;
   letter-spacing: 0.02em;
 }
 
@@ -22,4 +21,11 @@ h1, h2, h3, .font-serif-brand {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
+}
+
+/* Inputs at 16px or larger stop iOS Safari from zooming on focus. */
+@media (max-width: 767px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }

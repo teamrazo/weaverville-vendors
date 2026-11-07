@@ -18,8 +18,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        serifBrand: ['Cinzel', 'Georgia', 'serif'],
-        body: ['"Open Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        serifBrand: ['var(--font-cinzel)', 'Cinzel', 'Georgia', 'serif'],
+        body: ['var(--font-open-sans)', '"Open Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
         chamber: '0 4px 14px -2px rgba(22,21,19,0.25)',

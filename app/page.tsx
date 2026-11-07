@@ -24,7 +24,8 @@ export default function ApplicationPage() {
     description: '',
     boothType: currentEvent.booths[0],
     liabilityAccepted: false,
-    signatureName: ''
+    signatureName: '',
+    website: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,11 +95,37 @@ export default function ApplicationPage() {
         Weaverville Chamber of Commerce &middot; Est. 1909
       </p>
 
+      <div className="mb-6 rounded-md border border-chamber-gold/40 bg-chamber-gold/10 p-4 text-sm text-gray-800 space-y-2">
+        <p className="font-semibold text-chamber-black">
+          Vendors wanted for {EVENTS[DEFAULT_EVENT_KEY].name}.
+        </p>
+        <p>
+          Bring your crafts, gifts, food, or business to historic downtown Weaverville and meet shoppers from across Trinity County.
+          Choose your event, fill out the form, and pay the application fee online. It takes about five minutes.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Honeypot: hidden from people, filled by bots. */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+          <label htmlFor="website">Website</label>
+          <input
+            id="website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={formData.website}
+            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+          />
+        </div>
+
         {/* Event Selection Dropdown */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Select Event *</label>
+          <label htmlFor="event" className="block text-sm font-semibold text-gray-700 mb-2">Select Event *</label>
           <select
+            id="event"
+            name="event"
             value={selectedEventKey}
             onChange={(e) => {
               const k = e.target.value;
@@ -129,6 +156,7 @@ export default function ApplicationPage() {
               required
               type="text"
               value={formData.businessName}
+              name="organization" autoComplete="organization" autoCapitalize="words"
               onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
               className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
               placeholder="e.g. Trinity Crafts & Gifts"
@@ -140,6 +168,7 @@ export default function ApplicationPage() {
               required
               type="text"
               value={formData.contactName}
+              name="name" autoComplete="name" autoCapitalize="words"
               onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
               className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
             />
@@ -150,6 +179,7 @@ export default function ApplicationPage() {
               required
               type="tel"
               value={formData.phone}
+              name="tel" autoComplete="tel" inputMode="tel"
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
               placeholder="(530) 000-0000"
@@ -161,6 +191,7 @@ export default function ApplicationPage() {
               required
               type="email"
               value={formData.email}
+              name="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
             />
@@ -173,6 +204,7 @@ export default function ApplicationPage() {
             required
             type="text"
             value={formData.address}
+              name="street-address" autoComplete="street-address"
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
             placeholder="Street address, P.O. Box"
@@ -221,7 +253,7 @@ export default function ApplicationPage() {
               type="checkbox"
               checked={formData.liabilityAccepted}
               onChange={(e) => setFormData({ ...formData, liabilityAccepted: e.target.checked })}
-              className="h-4 w-4 text-chamber-black rounded border-gray-300 focus:ring-chamber-gold"
+              className="h-5 w-5 shrink-0 text-chamber-black rounded border-gray-300 focus:ring-chamber-gold"
             />
             <label htmlFor="disclaimer" className="text-sm font-medium text-gray-900 cursor-pointer">
               I have read, understand, and agree to the Liability Disclaimer *
@@ -236,6 +268,7 @@ export default function ApplicationPage() {
             required
             type="text"
             value={formData.signatureName}
+              name="signature" autoComplete="off" autoCapitalize="words"
             onChange={(e) => setFormData({ ...formData, signatureName: e.target.value })}
             className="w-full border border-gray-300 rounded-md p-2.5 font-mono text-sm focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
             placeholder="Type your full legal name to sign"
