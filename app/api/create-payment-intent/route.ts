@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { feeCentsFor } from '../../lib/events';
+import { EVENTS } from '../../lib/events';
+import { assertSameOrigin, clean, isEmail, readJsonBody, RequestError } from '../../lib/request';
 
 // Stripe metadata values are capped at 500 characters.
 const meta = (v: unknown) => (typeof v === 'string' ? v.slice(0, 500) : '');
@@ -12,39 +13,41 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Payment system not configured.' }, { status: 500 });
     }
 
-    let body: any = {};
-    try {
-      body = await req.json();
-    } catch {
-      body = {};
-    }
+    assertSameOrigin(req);
+    const body = await readJsonBody(req);
 
-    const {
-      email,
-      contactName,
-      businessName,
-      phone,
-      address,
-      city,
-      state,
-      zip,
-      eventKey,
-      eventName,
-      eventDate,
-      tagSlug,
-      boothType,
-      ghlContactId,
-    } = body;
+    const email = clean(body.email, 254).toLowerCase();
+    const contactName = clean(body.contactName, 120);
+    const businessName = clean(body.businessName, 160);
+    const phone = clean(body.phone, 40);
+    const address = clean(body.address, 200);
+    const city = clean(body.city, 80);
+    const state = clean(body.state, 40);
+    const zip = clean(body.zip, 20);
+    const boothType = clean(body.boothType, 120);
+    const ghlContactId = clean(body.ghlContactId, 64);
+    const eventKey = clean(body.eventKey, 60);
 
     // Refuse to take money without contact details. This is the gap that
     // let earlier orders through with no name or email attached.
-    if (!email || !contactName) {
-      console.error('[stripe] create-payment-intent called without contact details');
+    if (!email || !contactName || !isEmail(email)) {
+      console.error('[stripe] create-payment-intent called without valid contact details');
       return NextResponse.json(
         { error: 'Your application details were not found. Please submit the application form again.' },
         { status: 400 }
       );
     }
+
+    // Price, name, date, and tag come from the server's event list,
+    // never from the browser.
+    const event = EVENTS[eventKey];
+    if (!event) {
+      return NextResponse.json(
+        { error: 'This event is no longer available. Please submit the application form again.' },
+        { status: 400 }
+      );
+    }
+    const { name: eventName, date: eventDate, tagSlug } = event;
 
     const stripe = new Stripe(secretKey);
 
@@ -68,12 +71,10 @@ export async function POST(req: Request) {
       },
     });
 
-    const description = eventName
-      ? `Weaverville Chamber of Commerce - ${eventName} Vendor Application Fee`
-      : 'Weaverville Chamber of Commerce - Event Vendor Application Fee';
+    const description = `Weaverville Chamber of Commerce - ${eventName} Vendor Application Fee`;
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: feeCentsFor(eventKey),
+      amount: event.feeCents,
       currency: 'usd',
       customer: customer.id,
       description,
@@ -101,9 +102,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (err: any) {
+    if (err instanceof RequestError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error('Error in /api/create-payment-intent:', err);
     return NextResponse.json(
-      { error: err.message || 'Failed to create payment intent' },
+      { error: 'Unable to start payment. Please try again.' },
       { status: 500 }
     );
   }
