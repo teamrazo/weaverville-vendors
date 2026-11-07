@@ -1,8 +1,7 @@
 import { ImageResponse } from 'next/og';
-import { CHAMBER_NAME, FEATURED_EVENT, SHARE_SUBTITLE, SHARE_TITLE } from './lib/site';
-import { formatFee } from './lib/events';
+import { SHARE_SUBTITLE } from './lib/site';
 
-export const alt = `${SHARE_TITLE}. ${SHARE_SUBTITLE}`;
+export const alt = `Weaverville Chamber of Commerce event vendor registration. ${SHARE_SUBTITLE}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -55,7 +54,7 @@ export default async function Image() {
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', fontSize: 22, fontWeight: 700, letterSpacing: 5, color: '#f0d397', textTransform: 'uppercase' }}>
-            {`${CHAMBER_NAME} · Est. 1909`}
+            Trinity County, California · Est. 1909
           </div>
           <div style={{ display: 'flex', width: 96, height: 3, background: '#f0d397', marginTop: 22 }} />
         </div>
@@ -65,13 +64,16 @@ export default async function Image() {
             style={{
               display: 'flex',
               fontFamily: titleFont,
-              fontSize: 72,
+              fontSize: 64,
               fontWeight: 700,
               lineHeight: 1.08,
               color: '#fdfbf5',
             }}
           >
-            {SHARE_TITLE}
+            Weaverville Chamber of Commerce
+          </div>
+          <div style={{ display: 'flex', fontSize: 44, fontWeight: 700, color: '#f0d397', marginTop: 12 }}>
+            Event Vendor Registration
           </div>
           <div style={{ display: 'flex', fontSize: 34, lineHeight: 1.35, color: '#e9e2d0', marginTop: 22, maxWidth: 1000 }}>
             {SHARE_SUBTITLE}
@@ -95,7 +97,7 @@ export default async function Image() {
             Apply at vendors.weavervilleca.org
           </div>
           <div style={{ display: 'flex', fontSize: 24, color: '#f0d397', whiteSpace: 'nowrap', marginLeft: 24 }}>
-            {`${FEATURED_EVENT.date.replace(' (TBD)', '')} · ${formatFee(FEATURED_EVENT.feeCents)} fee`}
+            All Chamber events
           </div>
         </div>
       </div>

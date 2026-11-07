@@ -97,11 +97,11 @@ export default function ApplicationPage() {
 
       <div className="mb-6 rounded-md border border-chamber-gold/40 bg-chamber-gold/10 p-4 text-sm text-gray-800 space-y-2">
         <p className="font-semibold text-chamber-black">
-          Vendors wanted for {EVENTS[DEFAULT_EVENT_KEY].name}.
+          Bring your booth to Weaverville&apos;s community events.
         </p>
         <p>
-          Bring your crafts, gifts, food, or business to historic downtown Weaverville and meet shoppers from across Trinity County.
-          Choose your event, fill out the form, and pay the application fee online. It takes about five minutes.
+          Share your crafts, gifts, food, or business with visitors and neighbors in historic downtown Weaverville.
+          Choose your event, complete the form, and pay the application fee online. It takes about five minutes.
         </p>
       </div>
 

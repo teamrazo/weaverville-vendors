@@ -16,10 +16,10 @@ export const metadata: Metadata = {
   applicationName: `${CHAMBER_NAME} Vendor Portal`,
   keywords: [
     'Weaverville vendor application',
-    'Mountain Magic Christmas vendors',
+    'Weaverville event vendor registration',
     'Weaverville CA events',
     'Trinity County craft fair',
-    'holiday market vendor booth',
+    'Northern California craft fair vendor booth',
     'Weaverville Chamber of Commerce',
   ],
   authors: [{ name: CHAMBER_NAME, url: 'https://weavervilleca.org' }],
