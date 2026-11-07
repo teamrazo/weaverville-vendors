@@ -105,9 +105,19 @@ export async function POST(req: Request) {
     if (err instanceof RequestError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
-    console.error('Error in /api/create-payment-intent:', err);
+    // Full detail stays in the server logs. Vendors never see key or
+    // configuration errors from Stripe.
+    console.error('Error in /api/create-payment-intent:', {
+      type: err?.type,
+      code: err?.code,
+      statusCode: err?.statusCode,
+      message: err?.message,
+    });
     return NextResponse.json(
-      { error: 'Unable to start payment. Please try again.' },
+      {
+        error:
+          'Online payment is temporarily unavailable. Your application was received. Please try again later or contact the Chamber.',
+      },
       { status: 500 }
     );
   }

@@ -151,10 +151,11 @@ export default function ApplicationPage() {
         {/* Vendor Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Business / Vendor Name *</label>
+            <label htmlFor="businessName" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Business / Vendor Name *</label>
             <input
               required
               type="text"
+              id="businessName"
               value={formData.businessName}
               name="organization" autoComplete="organization" autoCapitalize="words"
               onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
@@ -163,10 +164,11 @@ export default function ApplicationPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Contact Person Name *</label>
+            <label htmlFor="contactName" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Contact Person Name *</label>
             <input
               required
               type="text"
+              id="contactName"
               value={formData.contactName}
               name="name" autoComplete="name" autoCapitalize="words"
               onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
@@ -174,10 +176,11 @@ export default function ApplicationPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Phone Number *</label>
+            <label htmlFor="phone" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Phone Number *</label>
             <input
               required
               type="tel"
+              id="phone"
               value={formData.phone}
               name="tel" autoComplete="tel" inputMode="tel"
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -186,10 +189,11 @@ export default function ApplicationPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Email Address *</label>
+            <label htmlFor="email" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Email Address *</label>
             <input
               required
               type="email"
+              id="email"
               value={formData.email}
               name="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -199,11 +203,12 @@ export default function ApplicationPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Mailing Address *</label>
+          <label htmlFor="address" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Mailing Address *</label>
           <input
             required
             type="text"
-            value={formData.address}
+            id="address"
+              value={formData.address}
               name="street-address" autoComplete="street-address"
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
@@ -213,11 +218,12 @@ export default function ApplicationPage() {
 
         {/* Product / Services Description */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Products / Services Description *</label>
+          <label htmlFor="description" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Products / Services Description *</label>
           <textarea
             required
             rows={3}
-            value={formData.description}
+            id="description"
+              value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
             placeholder="Briefly describe what you will sell, display, or promote..."
@@ -226,9 +232,10 @@ export default function ApplicationPage() {
 
         {/* Booth Selection */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Booth Space Option *</label>
+          <label htmlFor="boothType" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Booth Space Option *</label>
           <select
-            value={formData.boothType}
+            id="boothType"
+              value={formData.boothType}
             onChange={(e) => setFormData({ ...formData, boothType: e.target.value })}
             className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
           >
@@ -263,11 +270,12 @@ export default function ApplicationPage() {
 
         {/* Electronic Signature */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">Electronic Vendor Signature (Full Legal Name) *</label>
+          <label htmlFor="signatureName" className="block text-xs font-semibold text-gray-700 uppercase mb-1">Electronic Vendor Signature (Full Legal Name) *</label>
           <input
             required
             type="text"
-            value={formData.signatureName}
+            id="signatureName"
+              value={formData.signatureName}
               name="signature" autoComplete="off" autoCapitalize="words"
             onChange={(e) => setFormData({ ...formData, signatureName: e.target.value })}
             className="w-full border border-gray-300 rounded-md p-2.5 font-mono text-sm focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
