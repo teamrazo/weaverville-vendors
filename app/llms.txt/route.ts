@@ -1,4 +1,4 @@
-import { EVENTS, formatFee } from '../lib/events';
+import { EVENTS, feeSummary } from '../lib/events';
 import { CHAMBER_NAME, CHAMBER_URL, CONTACT, SITE_URL } from '../lib/site';
 
 // Plain-text summary for LLMs and AI search (llmstxt.org format).
@@ -9,7 +9,7 @@ export function GET() {
   const events = Object.values(EVENTS)
     .map(
       (ev) =>
-        `### ${ev.name}\n- Date: ${ev.date}\n- Time: ${ev.time}\n- Vendor application fee: ${formatFee(ev.feeCents)}\n- Booth options: ${ev.booths.join('; ')}`
+        `### ${ev.name}\n- Date: ${ev.date}\n- Time: ${ev.time}\n- Vendor fee: ${feeSummary(ev)}\n- Booth options: ${ev.booths.join('; ')}`
     )
     .join('\n\n');
 

@@ -8,15 +8,17 @@ import { CHAMBER_NAME, CHAMBER_URL, CONTACT, SITE_DESCRIPTION, SITE_TITLE, SITE_
 const ORG_ID = `${CHAMBER_URL}/#organization`;
 
 function buildGraph() {
-  const offers = Object.values(EVENTS).map((ev) => ({
-    '@type': 'Offer',
-    name: `${ev.name} vendor application`,
-    description: `Vendor application fee for ${ev.name} (${ev.date}). Booth options: ${ev.booths.join(', ')}.`,
-    price: (ev.feeCents / 100).toFixed(2),
-    priceCurrency: 'USD',
-    url: SITE_URL,
-    seller: { '@id': ORG_ID },
-  }));
+  const offers = Object.values(EVENTS).flatMap((ev) =>
+    (ev.options?.length ? ev.options : [null]).map((opt) => ({
+      '@type': 'Offer',
+      name: opt ? `${ev.name} vendor registration, ${opt.label}` : `${ev.name} vendor application`,
+      description: `Vendor ${opt ? `registration (${opt.detail.toLowerCase()})` : 'application fee'} for ${ev.name} (${ev.date}). Booth options: ${ev.booths.join(', ')}.`,
+      price: ((opt ? opt.feeCents : ev.feeCents) / 100).toFixed(2),
+      priceCurrency: 'USD',
+      url: SITE_URL,
+      seller: { '@id': ORG_ID },
+    }))
+  );
 
   return {
     '@context': 'https://schema.org',

@@ -1,16 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { EVENTS, DEFAULT_EVENT_KEY, formatFee } from './lib/events';
+import { Check } from 'lucide-react';
+import { EVENTS, DEFAULT_EVENT_KEY, feeSummary, formatFee, resolveFee } from './lib/events';
+import { APPLICATION_KEY, PAYMENT_KEY, loadApplication } from './lib/application';
+import Steps from './components/Steps';
 
 export default function ApplicationPage() {
   const router = useRouter();
   const [selectedEventKey, setSelectedEventKey] = useState(DEFAULT_EVENT_KEY);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [feeOption, setFeeOption] = useState('');
+  const [preferredDays, setPreferredDays] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+
   const currentEvent = EVENTS[selectedEventKey];
-  const feeLabel = formatFee(currentEvent.feeCents);
+  const hasOptions = Boolean(currentEvent.options?.length);
+  const resolved = resolveFee(selectedEventKey, feeOption);
+  const selectedOption = resolved?.option || null;
+  const feeLabel = resolved ? formatFee(resolved.feeCents) : null;
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -28,14 +38,40 @@ export default function ApplicationPage() {
     website: ''
   });
 
+  // Coming back from the payment step: reopen the saved application.
+  useEffect(() => {
+    const saved = loadApplication();
+    if (!saved || !saved.eventKey || !EVENTS[saved.eventKey]) return;
+    const ev = EVENTS[saved.eventKey];
+    setSelectedEventKey(saved.eventKey);
+    setFeeOption(String(saved.feeOption || ''));
+    setPreferredDays(String(saved.preferredDays || ''));
+    setFormData((prev) => {
+      const next = { ...prev };
+      (Object.keys(prev) as Array<keyof typeof prev>).forEach((k) => {
+        if (k === 'website' || k === 'liabilityAccepted' || k === 'signatureName') return;
+        const v = saved[k];
+        if (typeof v === 'string' && v) (next as Record<string, unknown>)[k] = v;
+      });
+      if (!ev.booths.includes(next.boothType)) next.boothType = ev.booths[0];
+      return next;
+    });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    if (!resolved) {
+      setFormError('Please choose how many days you will attend.');
+      document.getElementById('fee-options')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     if (!formData.liabilityAccepted) {
-      alert('Please check the disclaimer of liability box to proceed.');
+      setFormError('Please check the liability disclaimer box to continue.');
       return;
     }
     if (!formData.signatureName) {
-      alert('Please provide an electronic signature.');
+      setFormError('Please type your full legal name to sign.');
       return;
     }
 
@@ -47,17 +83,19 @@ export default function ApplicationPage() {
       eventName: currentEvent.name,
       eventDate: currentEvent.date,
       tagSlug: currentEvent.tagSlug,
-      fee: currentEvent.feeCents / 100
+      feeOption: selectedOption?.id || '',
+      feeOptionLabel: selectedOption?.label || '',
+      preferredDays: selectedOption?.asksDays ? preferredDays.trim() : '',
+      fee: resolved.feeCents / 100
     };
 
     // The payment step reads this to attach the vendor's contact details
     // to the Stripe customer and payment.
     const saveApplication = (ghlContactId: string | null) => {
       try {
-        sessionStorage.setItem(
-          'wcoc_vendor_application',
-          JSON.stringify({ ...application, ghlContactId })
-        );
+        sessionStorage.setItem(APPLICATION_KEY, JSON.stringify({ ...application, ghlContactId }));
+        // A new application starts a new payment.
+        sessionStorage.removeItem(PAYMENT_KEY);
       } catch {
         /* storage blocked; payment page will ask them to resubmit */
       }
@@ -73,21 +111,23 @@ export default function ApplicationPage() {
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         saveApplication(data.ghlContactId || null);
-        router.push(`/payment?event=${selectedEventKey}&email=${encodeURIComponent(formData.email)}`);
+        router.push('/payment');
       } else {
-        alert('There was an issue submitting your application. Please try again.');
+        const data = await res.json().catch(() => ({}));
+        setFormError(data.error || 'There was an issue submitting your application. Please try again.');
         setIsSubmitting(false);
       }
     } catch (err) {
       console.error(err);
       saveApplication(null);
       setIsSubmitting(false);
-      router.push(`/payment?event=${selectedEventKey}&email=${encodeURIComponent(formData.email)}`);
+      router.push('/payment');
     }
   };
 
   return (
     <div className="bg-white rounded-xl shadow-chamber border border-chamber-gold/30 p-6 md:p-8">
+      <Steps current={0} />
       <h2 className="text-2xl font-bold font-serif-brand text-chamber-black mb-1 pb-3 border-b-2 border-chamber-gold/60">
         Official Event Vendor Application
       </h2>
@@ -130,6 +170,8 @@ export default function ApplicationPage() {
             onChange={(e) => {
               const k = e.target.value;
               setSelectedEventKey(k);
+              setFeeOption('');
+              setPreferredDays('');
               setFormData(prev => ({ ...prev, boothType: EVENTS[k].booths[0] }));
             }}
             className="w-full border border-gray-300 rounded-md p-3 text-gray-900 bg-chamber-gold/10 focus:ring-2 focus:ring-chamber-black font-medium"
@@ -145,8 +187,68 @@ export default function ApplicationPage() {
           <p><strong className="font-semibold text-chamber-gold">Event Name:</strong> {currentEvent.name}</p>
           <p><strong className="font-semibold text-chamber-gold">Date:</strong> {currentEvent.date}</p>
           <p><strong className="font-semibold text-chamber-gold">Time:</strong> {currentEvent.time}</p>
-          <p><strong className="font-semibold text-chamber-gold">Vendor Application Fee:</strong> <span className="text-chamber-accent font-bold">{feeLabel}</span></p>
+          <p><strong className="font-semibold text-chamber-gold">Vendor Fee:</strong> <span className="text-chamber-accent font-bold">{feeSummary(currentEvent)}</span></p>
         </div>
+
+        {/* Day options, for events priced by attendance */}
+        {hasOptions && (
+          <fieldset id="fee-options" className="space-y-3">
+            <legend className="block text-sm font-semibold text-gray-700 mb-2">How many days will you attend? *</legend>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup">
+              {currentEvent.options!.map((opt) => {
+                const active = feeOption === opt.id;
+                return (
+                  <label
+                    key={opt.id}
+                    className={`relative flex cursor-pointer flex-col rounded-lg border-2 p-4 transition-colors focus-within:ring-2 focus-within:ring-chamber-black ${
+                      active ? 'border-chamber-gold bg-chamber-gold/10' : 'border-gray-200 hover:border-chamber-gold/60'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="feeOption"
+                      value={opt.id}
+                      checked={active}
+                      onChange={() => { setFeeOption(opt.id); setFormError(null); }}
+                      className="sr-only"
+                    />
+                    <span className="flex items-center justify-between">
+                      <span className="font-semibold text-chamber-black">{opt.label}</span>
+                      <span
+                        aria-hidden="true"
+                        className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                          active ? 'border-chamber-black bg-chamber-black text-chamber-gold' : 'border-gray-300'
+                        }`}
+                      >
+                        {active && <Check size={13} strokeWidth={3} />}
+                      </span>
+                    </span>
+                    <span className="mt-1 text-2xl font-bold text-chamber-black">{formatFee(opt.feeCents)}</span>
+                    <span className="mt-1 text-xs text-gray-600">{opt.detail}</span>
+                  </label>
+                );
+              })}
+            </div>
+            {selectedOption?.asksDays && (
+              <div>
+                <label htmlFor="preferredDays" className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                  Preferred day{selectedOption.id === 'one_day' ? '' : 's'} (optional)
+                </label>
+                <input
+                  type="text"
+                  id="preferredDays"
+                  name="preferredDays"
+                  value={preferredDays}
+                  maxLength={120}
+                  onChange={(e) => setPreferredDays(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
+                  placeholder={selectedOption.id === 'one_day' ? 'e.g. Saturday' : 'e.g. Friday and Saturday'}
+                />
+                <p className="text-[11px] text-gray-500 mt-1">The Chamber confirms your day{selectedOption.id === 'one_day' ? '' : 's'} once the event schedule is set.</p>
+              </div>
+            )}
+          </fieldset>
+        )}
 
         {/* Vendor Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -284,13 +386,27 @@ export default function ApplicationPage() {
           <p className="text-[11px] text-gray-500 mt-1">By typing your name, you acknowledge this electronic signature as legally binding.</p>
         </div>
 
+        {formError && (
+          <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3">{formError}</p>
+        )}
+
+        {/* Order summary */}
+        <div className="flex items-center justify-between rounded-md border border-chamber-gold/40 bg-chamber-gold/10 px-4 py-3 text-sm">
+          <span className="text-gray-700">
+            {currentEvent.name}
+            {selectedOption ? ` · ${selectedOption.label}` : ''}
+          </span>
+          <span className="text-lg font-bold text-chamber-black">{feeLabel ?? 'Choose an option'}</span>
+        </div>
+
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-chamber-black hover:bg-chamber-dark text-chamber-gold font-bold py-3 px-6 rounded-md shadow-chamber border border-chamber-gold/40 transition-colors uppercase tracking-wide text-sm"
+          className="w-full bg-chamber-black hover:bg-chamber-dark disabled:opacity-60 text-chamber-gold font-bold py-3.5 px-6 rounded-md shadow-chamber border border-chamber-gold/40 transition-colors uppercase tracking-wide text-sm"
         >
-          {isSubmitting ? 'Submitting Application...' : `Submit Application & Proceed to Payment (${feeLabel})`}
+          {isSubmitting ? 'Saving your application...' : feeLabel ? `Continue to Secure Payment · ${feeLabel}` : 'Continue to Secure Payment'}
         </button>
+        <p className="text-center text-[11px] text-gray-500">Next step: secure payment by card or digital wallet, processed by Stripe.</p>
       </form>
     </div>
   );
