@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { EVENTS, resolveFee } from '../../lib/events';
+import { GhlClient, GhlError, ghlConfigFromEnv } from '../../lib/ghl';
+import { linkStripeIds } from '../../lib/vendor-sync';
 import { assertSameOrigin, clean, isEmail, readJsonBody, RequestError } from '../../lib/request';
 
 // Stripe metadata values are capped at 500 characters.
@@ -112,7 +114,8 @@ export async function POST(req: Request) {
       }
     }
 
-    const customer = await stripe.customers.create({
+    // One Stripe customer per vendor email: reuse it across applications and events.
+    const customerFields: Stripe.CustomerCreateParams = {
       email,
       name: contactName,
       phone: phone || undefined,
@@ -120,8 +123,13 @@ export async function POST(req: Request) {
         ? { line1: address, city: city || undefined, state: state || undefined, postal_code: zip || undefined, country: 'US' }
         : undefined,
       description: businessName ? `Vendor: ${businessName}` : undefined,
-      metadata: { source: 'weaverville-vendors', businessName: meta(businessName) },
-    });
+      metadata: { source: 'weaverville-vendors', businessName: meta(businessName), company: meta(businessName), ghlContactId: meta(ghlContactId) },
+    };
+    const existing = (await stripe.customers.list({ email, limit: 10 })).data;
+    const reuse = existing.find((c) => c.metadata?.source === 'weaverville-vendors') || existing[0];
+    const customer = reuse
+      ? await stripe.customers.update(reuse.id, customerFields as Stripe.CustomerUpdateParams)
+      : await stripe.customers.create(customerFields);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: fee.feeCents,
@@ -132,6 +140,19 @@ export async function POST(req: Request) {
       automatic_payment_methods: { enabled: true },
       metadata,
     });
+
+    // Link the records both ways. Stripe already carries ghlContactId in metadata; HighLevel gets
+    // the Stripe ids. A HighLevel failure is logged in full but never blocks the payment.
+    if (ghlContactId) {
+      try {
+        await linkStripeIds(new GhlClient(ghlConfigFromEnv()), ghlContactId, { customerId: customer.id, paymentIntentId: paymentIntent.id });
+      } catch (err) {
+        const detail = err instanceof GhlError ? { op: err.op, status: err.status, body: err.body } : { message: (err as Error)?.message };
+        console.error('[create-payment-intent] Could not write Stripe ids to HighLevel', { ghlContactId, paymentIntent: paymentIntent.id, ...detail });
+      }
+    } else {
+      console.warn('[create-payment-intent] No HighLevel contact id for this application; the webhook will match by email.', { paymentIntent: paymentIntent.id });
+    }
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,

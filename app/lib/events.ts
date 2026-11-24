@@ -28,14 +28,15 @@ export type VendorEvent = {
 export const EVENTS: Record<string, VendorEvent> = {
   mountain_magic: {
     id: 'mountain_magic',
-    name: 'Mountain Magic Christmas',
-    date: 'December 2026 (TBD)',
+    name: '46th Annual Mountain Magic Christmas',
+    date: 'Fri Nov 27 and Sat Dec 5, 12 & 19, 2026',
     time: 'TBD',
     feeCents: 2500,
     options: [
-      { id: 'one_day', label: '1 Day', detail: 'One day of the event', feeCents: 2500, asksDays: true },
-      { id: 'two_days', label: '2 Days', detail: 'Any two days of the event', feeCents: 5000, asksDays: true },
-      { id: 'full_event', label: 'Entire Event', detail: 'Every day of the event', feeCents: 7500 },
+      // Fees approved by the Chamber Board, Motion #132.
+      { id: 'one_day', label: '1 Day', detail: 'Any one of the four event days', feeCents: 2500, asksDays: true },
+      { id: 'two_days', label: '2 Days', detail: 'Any two of the four event days', feeCents: 5000, asksDays: true },
+      { id: 'full_event', label: 'Entire Event', detail: 'All four days: Nov 27, Dec 5, 12 & 19', feeCents: 7500 },
     ],
     booths: ['Indoor Hall Space', 'Outdoor Booth Space'],
     tagSlug: 'mountain-magic-2026'
