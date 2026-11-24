@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GHL_TAGS, upsertGhlContact } from '../../lib/ghl';
-import { EVENTS } from '../../lib/events';
+import { EVENTS, resolveFee } from '../../lib/events';
 import { assertSameOrigin, clean, isEmail, readJsonBody, RequestError } from '../../lib/request';
 
 export async function POST(req: Request) {
@@ -27,6 +27,9 @@ export async function POST(req: Request) {
     const event = EVENTS[clean(body.eventKey, 60)];
     if (!event) {
       return NextResponse.json({ success: false, error: 'Please choose an event.' }, { status: 400 });
+    }
+    if (!resolveFee(event.id, clean(body.feeOption, 40))) {
+      return NextResponse.json({ success: false, error: 'Please choose how many days you will attend.' }, { status: 400 });
     }
 
     const ghl = await upsertGhlContact(
