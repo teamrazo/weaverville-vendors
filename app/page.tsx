@@ -242,9 +242,9 @@ export default function ApplicationPage() {
                   maxLength={120}
                   onChange={(e) => setPreferredDays(e.target.value)}
                   className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-chamber-black focus:border-chamber-black"
-                  placeholder={selectedOption.id === 'one_day' ? 'e.g. Saturday' : 'e.g. Friday and Saturday'}
+                  placeholder={selectedOption.id === 'one_day' ? 'e.g. Sat Dec 12' : 'e.g. Fri Nov 27 and Sat Dec 5'}
                 />
-                <p className="text-[11px] text-gray-500 mt-1">The Chamber confirms your day{selectedOption.id === 'one_day' ? '' : 's'} once the event schedule is set.</p>
+                <p className="text-[11px] text-gray-500 mt-1">Event days: Fri Nov 27 and Sat Dec 5, 12 and 19. The Chamber confirms your day{selectedOption.id === 'one_day' ? '' : 's'} with your acceptance email.</p>
               </div>
             )}
           </fieldset>
